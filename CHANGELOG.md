@@ -7,6 +7,16 @@ on what the software does, not on what sprint shipped what.
 
 ## [Unreleased]
 
+**A locally built Mac app could crash on the first PDF.** PyInstaller
+collects two different HarfBuzz builds into one bundle — Pillow's private
+copy and the Homebrew one Pango needs — and both answer to the same install
+name, so whichever loads first wins for the whole process. When Pillow's
+won, `libharfbuzz-subset` resolved against it and PDF rendering died in
+native code. `packaging/macos/isolate_pillow_harfbuzz.py` gives Pillow's
+copy a private install name and restores the public alias to the Homebrew
+library; `packaging/macos/README.md` covers when to run it. Local builds
+only — CI-built releases are unaffected.
+
 ### v2.11.1 — Wave imports work, and you can copy an API token
 
 Both fixes in this release came from @rchanks, and both were found the way

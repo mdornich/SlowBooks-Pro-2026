@@ -165,3 +165,16 @@ Fleet-specific gotchas that differ from a normal dev Mac:
 
 These are proof-of-pipeline builds; a real release still follows the tag-commit
 rebuild + installed-app acceptance gates documented above.
+
+## Pillow/Pango HarfBuzz collision in local builds
+
+If the frozen PDF smoke test crashes in HarfBuzz while unfrozen rendering works,
+inspect the loaded libraries and the `Frameworks/libharfbuzz.0.dylib` alias.
+PyInstaller can alias that name to Pillow's private library, which is incompatible
+with Homebrew's `libharfbuzz-subset` in the same process. Run
+`python packaging/macos/isolate_pillow_harfbuzz.py "path/to/SlowBooks Pro.app"`
+after `prepare_bundle.py` and before final signing. This gives Pillow's copy a
+private install name and restores the Pango alias to the Homebrew copy. Re-run
+`--smoke-test` in a temporary `SLOWBOOKS_DATA_DIR`; do not install based solely on
+unit tests. The script applies ad-hoc signatures; the release signing process
+still supplies the final Developer ID signatures.
